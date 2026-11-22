@@ -11,4 +11,4 @@ router.use('/', userRoutes);
 router.use('/', shoppingRoutes);
 router.use('/', gestionProRoutes);
 
-module.exports = router;``
+module.exports = router;
