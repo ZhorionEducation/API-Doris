@@ -47,9 +47,144 @@ paths:
                 $ref: '#/components/schemas/Error'
               example:
                 error: Error al obtener las compras
+    post:
+      tags:
+        - Compras
+      summary: Registrar una compra
+      description: Crea una nueva compra en la base de datos.
+      operationId: registerShopping
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShopping'
+      responses:
+        '201':
+          description: Compra registrada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterShoppingResult'
+        '500':
+          description: Error al registrar la compra.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al registrar la compra
 
 components:
   schemas:
+    CreateShopping:
+      type: object
+      required:
+        - proveedor_id
+        - encargado_documento
+        - fecha_compra
+        - fecha_entrega
+        - bodega_destino
+        - detalles
+      properties:
+        proveedor_id:
+          type: integer
+          description: Identificador del proveedor.
+          example: 12
+        encargado_documento:
+          type: string
+          maxLength: 20
+          description: Numero de documento del encargado de la compra.
+          example: '1234567890'
+        fecha_compra:
+          type: string
+          format: date
+          description: Fecha en que se realizo la compra.
+          example: '2025-01-15'
+        fecha_entrega:
+          type: string
+          format: date
+          description: Fecha prevista o real de entrega.
+          example: '2025-01-20'
+        bodega_destino:
+          type: string
+          maxLength: 60
+          description: Bodega que recibira la compra.
+          example: Bodega principal
+        observaciones:
+          type: string
+          nullable: true
+          description: Observaciones adicionales de la compra.
+          example: Entrega acordada por la manana
+        estado:
+          type: string
+          enum:
+            - Pendiente
+            - Recibida
+            - Anulada
+          description: Estado actual de la compra.
+          example: Pendiente
+        porcentaje_iva:
+          type: number
+          format: double
+          minimum: 0
+          description: Porcentaje de IVA aplicado al subtotal.
+          default: 19
+          example: 19
+        detalles:
+          type: array
+          minItems: 1
+          description: Productos incluidos en la compra.
+          items:
+            $ref: '#/components/schemas/CreateShoppingDetail'
+
+    CreateShoppingDetail:
+      type: object
+      required:
+        - producto_id
+        - cantidad
+        - valor_unitario
+      properties:
+        producto_id:
+          type: integer
+          minimum: 1
+          description: Identificador del producto.
+          example: 10
+        cantidad:
+          type: integer
+          minimum: 1
+          description: Cantidad comprada.
+          example: 5
+        valor_unitario:
+          type: number
+          format: double
+          minimum: 0
+          description: Valor unitario del producto.
+          example: 100000
+
+    RegisterShoppingResult:
+      type: object
+      description: Resultado de la compra y sus detalles registrados.
+      properties:
+        compra_id:
+          type: integer
+          example: 25
+        subtotal:
+          type: number
+          format: double
+          example: 850000
+        iva:
+          type: number
+          format: double
+          example: 161500
+        total:
+          type: number
+          format: double
+          example: 1011500
+        detalles_registrados:
+          type: integer
+          example: 2
+
     ShoppingPage:
       type: object
       properties:
@@ -78,17 +213,17 @@ components:
           example: '1234567890'
         fecha_compra:
           type: string
-          format: date-time
+          format: date
           description: Fecha en que se realizo la compra.
-          example: '2025-01-15T10:30:00.000Z'
+          example: '2025-01-15'
         fecha_entrega:
           type: string
           format: date
-          nullable: true
           description: Fecha prevista o real de entrega.
           example: '2025-01-20'
         bodega_destino:
           type: string
+          maxLength: 60
           description: Bodega que recibira la compra.
           example: Bodega principal
         subtotal:

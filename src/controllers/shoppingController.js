@@ -20,6 +20,21 @@ const getAllShoppiing = async (req, res) => {
     }
 };
 
+const registerShopping = async (req, res) => {
+    try {
+        const shoppingData = req.body;
+        const result = await services.registerShopping(shoppingData);
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            error: error.statusCode
+                ? error.message
+                : 'Error al registrar la compra'
+        });
+    }
+};
+
 module.exports = {
-    getAllShoppiing
+    getAllShoppiing,
+    registerShopping
 };
