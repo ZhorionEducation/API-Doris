@@ -5,6 +5,11 @@ const getAllShopping = async (page, limit) => {
     return await repository.getAllShopping(page, limit);
 }
 
+
+const registerShopping = async (shoppingData) => {
+    return await repository.registerShopping(shoppingData);
+}
 module.exports = {
-    getAllShopping
+    getAllShopping,
+    registerShopping
 };
