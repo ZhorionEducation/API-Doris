@@ -1,0 +1,117 @@
+paths:
+  /api/shopping:
+    get:
+      tags:
+        - Compras
+      summary: Obtener todas las compras
+      description: Devuelve una pagina de compras registradas, ordenadas por fecha de compra descendente.
+      operationId: getAllShopping
+      parameters:
+        - name: page
+          in: query
+          description: Numero de pagina, comenzando desde 1.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Cantidad de compras por pagina.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Pagina de compras obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingPage'
+        '400':
+          description: Parametros de paginacion invalidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: El parametro page debe ser un entero mayor o igual a 1
+        '500':
+          description: Error al obtener las compras.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al obtener las compras
+
+components:
+  schemas:
+    ShoppingPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Shopping'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Shopping:
+      type: object
+      description: Datos de una compra registrada en el sistema.
+      properties:
+        id:
+          type: integer
+          description: Identificador de la compra.
+          example: 1
+        proveedor_id:
+          type: integer
+          description: Identificador del proveedor.
+          example: 12
+        encargado_documento:
+          type: string
+          description: Numero de documento del encargado de la compra.
+          example: '1234567890'
+        fecha_compra:
+          type: string
+          format: date-time
+          description: Fecha en que se realizo la compra.
+          example: '2025-01-15T10:30:00.000Z'
+        fecha_entrega:
+          type: string
+          format: date
+          nullable: true
+          description: Fecha prevista o real de entrega.
+          example: '2025-01-20'
+        bodega_destino:
+          type: string
+          description: Bodega que recibira la compra.
+          example: Bodega principal
+        subtotal:
+          type: number
+          format: double
+          description: Subtotal de la compra.
+          example: 850000
+        iva:
+          type: number
+          format: double
+          description: Valor del IVA.
+          example: 161500
+        total:
+          type: number
+          format: double
+          description: Valor total de la compra.
+          example: 1011500
+        observaciones:
+          type: string
+          nullable: true
+          description: Observaciones adicionales de la compra.
+          example: Entrega acordada por la manana
+        estado:
+          type: string
+          description: Estado actual de la compra.
+          example: Pendiente
