@@ -8,6 +8,7 @@ const docsPath = __dirname;
 const files = fs.readdirSync(docsPath).filter(file => file.endsWith('.yaml'));
 
 const paths = {};
+const components = {};
 
 files.forEach(file => {
     const content = fs.readFileSync(path.join(docsPath, file), 'utf8');
@@ -15,6 +16,7 @@ files.forEach(file => {
     const document = yaml.load(content);
 
     Object.assign(paths, document.paths || {});
+    Object.assign(components, document.components || {});
 });
 
 const swaggerDocument = {
@@ -30,7 +32,8 @@ const swaggerDocument = {
             description: 'Servidor local',
         }
     ],
-    paths: paths
+    paths: paths,
+    components: components
 };
 
 module.exports = {
