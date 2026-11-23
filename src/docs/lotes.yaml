@@ -1,0 +1,168 @@
+
+openapi: 3.0.3
+
+info:
+  title: API Doris - Gestión de Lotes
+  version: 1.0.0
+  description: Documentación del módulo de Gestión de Lotes.
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor local de desarrollo
+
+tags:
+  - name: Lotes
+    description: Administración y consulta de lotes
+
+paths:
+  /api/lotes:
+    get:
+      tags:
+        - Lotes
+      summary: Listar todos los lotes
+      operationId: getAllLotes
+      responses:
+        '200':
+          description: Lotes obtenidos correctamente
+        '500':
+          description: Error interno del servidor
+
+    post:
+      tags:
+        - Lotes
+      summary: Registrar un lote
+      operationId: registerLote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoteEntrada'
+      responses:
+        '201':
+          description: Lote registrado correctamente
+        '400':
+          description: Datos inválidos
+        '409':
+          description: El lote ya existe o presenta un conflicto
+        '500':
+          description: Error interno del servidor
+
+  /api/lotes/disponibles:
+    get:
+      tags:
+        - Lotes
+      summary: Consultar detalles de compra disponibles
+      operationId: getDetallesDisponibles
+      responses:
+        '200':
+          description: Detalles de compra disponibles
+        '500':
+          description: Error interno del servidor
+
+  /api/lotes/{id}:
+    get:
+      tags:
+        - Lotes
+      summary: Consultar lote por ID
+      operationId: getLoteById
+      parameters:
+        - $ref: '#/components/parameters/LoteId'
+      responses:
+        '200':
+          description: Lote encontrado
+        '400':
+          description: ID inválido
+        '404':
+          description: Lote no encontrado
+        '500':
+          description: Error interno del servidor
+
+    put:
+      tags:
+        - Lotes
+      summary: Actualizar lote
+      operationId: updateLote
+      parameters:
+        - $ref: '#/components/parameters/LoteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoteEntrada'
+      responses:
+        '200':
+          description: Lote actualizado correctamente
+        '400':
+          description: Datos inválidos
+        '404':
+          description: Lote no encontrado
+        '409':
+          description: Conflicto al actualizar lote
+        '500':
+          description: Error interno del servidor
+
+    delete:
+      tags:
+        - Lotes
+      summary: Eliminar lote
+      operationId: deleteLote
+      parameters:
+        - $ref: '#/components/parameters/LoteId'
+      responses:
+        '200':
+          description: Lote eliminado correctamente
+        '400':
+          description: ID inválido
+        '404':
+          description: Lote no encontrado
+        '409':
+          description: No se puede eliminar el lote
+        '500':
+          description: Error interno del servidor
+
+components:
+  parameters:
+    LoteId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+  schemas:
+    LoteEntrada:
+      type: object
+      required:
+        - detalle_compra_id
+        - numero_lote
+        - fecha_vencimiento
+        - cantidad_disponible
+      properties:
+        detalle_compra_id:
+          type: integer
+          minimum: 1
+          example: 1
+        numero_lote:
+          type: string
+          minLength: 1
+          maxLength: 40
+          example: LOTE-2026-001
+        fecha_vencimiento:
+          type: string
+          format: date
+          example: "2027-12-31"
+        cantidad_disponible:
+          type: integer
+          minimum: 0
+          example: 20
+
+    Lote:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+        - $ref: '#/components/schemas/LoteEntrada'
