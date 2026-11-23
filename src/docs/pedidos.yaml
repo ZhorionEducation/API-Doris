@@ -1,0 +1,380 @@
+
+openapi: 3.0.3
+
+info:
+  title: API Doris - Gestión de Pedidos
+  version: 1.0.0
+  description: Documentación del módulo de Gestión de Pedidos.
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor local de desarrollo
+
+tags:
+  - name: Pedidos
+    description: Consultas de pedidos
+
+paths:
+  /api/pedidos:
+    get:
+      tags:
+        - Pedidos
+      summary: Listar pedidos
+      description: Obtiene los pedidos con paginación y filtros.
+      operationId: getAllPedidos
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - name: cliente_documento
+          in: query
+          schema:
+            type: string
+            maxLength: 20
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: [Pendiente, Confirmado, Venta, Anulado]
+        - name: fecha_inicio
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: fecha_fin
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Pedidos obtenidos correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaListaPedidos'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/pedidos/{id}:
+    get:
+      tags:
+        - Pedidos
+      summary: Consultar pedido por ID
+      operationId: getPedidoById
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaPedido'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/pedidos/{id}/detalle:
+    get:
+      tags:
+        - Pedidos
+      summary: Consultar detalle de pedido
+      description: Incluye productos y servicios del pedido.
+      operationId: getDetallePedido
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Detalle obtenido correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaDetallePedido'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/pedidos/cliente/{documento}:
+    get:
+      tags:
+        - Pedidos
+      summary: Consultar pedidos por cliente
+      operationId: getPedidosByCliente
+      parameters:
+        - name: documento
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Pedidos del cliente obtenidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaListaPedidos'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/pedidos/estado/{estado}:
+    get:
+      tags:
+        - Pedidos
+      summary: Consultar pedidos por estado
+      operationId: getPedidosByEstado
+      parameters:
+        - name: estado
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [Pendiente, Confirmado, Venta, Anulado]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Pedidos filtrados por estado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaListaPedidos'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/pedidos/fechas:
+    get:
+      tags:
+        - Pedidos
+      summary: Consultar pedidos por fechas
+      operationId: getPedidosByFechas
+      parameters:
+        - name: fecha_inicio
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: fecha_fin
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Pedidos filtrados por fechas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaListaPedidos'
+        '400':
+          $ref: '#/components/responses/ErrorValidacion'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+components:
+  parameters:
+    PedidoId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+
+  schemas:
+    Pedido:
+      type: object
+      properties:
+        id:
+          type: integer
+        cliente_documento:
+          type: string
+        vendedor_documento:
+          type: string
+        cliente:
+          type: string
+        vendedor:
+          type: string
+        fecha_pedido:
+          type: string
+          format: date
+        direccion_entrega:
+          type: string
+          nullable: true
+        subtotal:
+          type: number
+        iva:
+          type: number
+        total:
+          type: number
+        observaciones:
+          type: string
+          nullable: true
+        estado:
+          type: string
+          enum: [Pendiente, Confirmado, Venta, Anulado]
+
+    ProductoPedido:
+      type: object
+      properties:
+        id:
+          type: integer
+        producto_id:
+          type: integer
+        producto:
+          type: string
+        cantidad:
+          type: integer
+        valor_unitario:
+          type: number
+        subtotal:
+          type: number
+
+    ServicioPedido:
+      type: object
+      properties:
+        id:
+          type: integer
+        servicio_codigo:
+          type: string
+        servicio:
+          type: string
+        cantidad:
+          type: integer
+        valor_unitario:
+          type: number
+        subtotal:
+          type: number
+
+    DetallePedido:
+      allOf:
+        - $ref: '#/components/schemas/Pedido'
+        - type: object
+          properties:
+            productos:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductoPedido'
+            servicios:
+              type: array
+              items:
+                $ref: '#/components/schemas/ServicioPedido'
+
+    RespuestaListaPedidos:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalPages:
+              type: integer
+            pedidos:
+              type: array
+              items:
+                $ref: '#/components/schemas/Pedido'
+
+    RespuestaPedido:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/Pedido'
+
+    RespuestaDetallePedido:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/DetallePedido'
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+  responses:
+    ErrorValidacion:
+      description: Datos inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NoEncontrado:
+      description: Pedido no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    ErrorServidor:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
