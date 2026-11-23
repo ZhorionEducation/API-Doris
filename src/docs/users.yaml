@@ -1,0 +1,360 @@
+paths:
+  /api/users:
+    post:
+      tags:
+        - Usuarios
+      summary: Registrar un usuario
+      description: Crea un nuevo usuario en la base de datos.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+      responses:
+        '201':
+          description: Usuario registrado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterUserResult'
+        '409':
+          description: Ya existe un usuario con el correo electronico o numero de documento enviado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Ya existe un usuario con ese correo electronico
+        '500':
+          description: Error al registrar el usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al registrar el usuario
+
+    get:
+      tags:
+        - Usuarios
+      summary: Obtener todos los usuarios
+      description: Devuelve una pagina de usuarios registrados.
+      operationId: getAllUsers
+      parameters:
+        - name: page
+          in: query
+          description: Numero de pagina, comenzando desde 1.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Cantidad de usuarios por pagina.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Pagina de usuarios obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '400':
+          description: Parametros de paginacion invalidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener los usuarios.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al obtener los usuarios
+
+  /api/users/{id}:
+    put:
+      tags:
+        - Usuarios
+      summary: Actualizar un usuario
+      description: Actualiza los datos de un usuario identificado por su numero de documento.
+      operationId: updateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Numero de documento del usuario.
+          schema:
+            type: string
+            example: '1234567890'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+      responses:
+        '200':
+          description: Usuario actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterUserResult'
+        '409':
+          description: Ya existe otro usuario con el correo enviado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Ya existe un usuario con ese correo electronico
+        '500':
+          description: Error al actualizar el usuario.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al actualizar el usuario
+
+components:
+  schemas:
+    CreateUser:
+      type: object
+      required:
+        - numero_documento
+        - rol_codigo
+        - tipo_documento
+        - nombres
+        - apellidos
+        - email
+        - contrasena
+        - fecha_ingreso
+        - estado
+      properties:
+        numero_documento:
+          type: string
+          maxLength: 20
+          example: '1234567890'
+        rol_codigo:
+          type: string
+          maxLength: 20
+          example: EST
+        tipo_documento:
+          type: string
+          enum:
+            - CC
+            - CE
+            - TI
+            - Pasaporte
+          example: CC
+        nombres:
+          type: string
+          maxLength: 80
+          example: Ana María
+        apellidos:
+          type: string
+          maxLength: 80
+          example: López García
+        email:
+          type: string
+          format: email
+          maxLength: 120
+          example: ana.lopez@example.com
+        contrasena:
+          type: string
+          format: password
+          maxLength: 255
+          example: 'contraseña123'
+        telefono:
+          type: string
+          maxLength: 20
+          example: '3001234567'
+        direccion:
+          type: string
+          maxLength: 150
+          example: 'Calle 10 # 20-30'
+        alergias:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: Polen
+        fecha_ingreso:
+          type: string
+          format: date
+          example: '2025-01-15'
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    UpdateUser:
+      type: object
+      required:
+        - rol_codigo
+        - tipo_documento
+        - nombres
+        - apellidos
+        - email
+        - fecha_ingreso
+        - estado
+      properties:
+        rol_codigo:
+          type: string
+          maxLength: 20
+          example: EST
+        tipo_documento:
+          type: string
+          enum:
+            - CC
+            - CE
+            - TI
+            - Pasaporte
+          example: CC
+        nombres:
+          type: string
+          maxLength: 80
+          example: Ana María
+        apellidos:
+          type: string
+          maxLength: 80
+          example: López García
+        email:
+          type: string
+          format: email
+          maxLength: 120
+          example: ana.lopez@example.com
+        telefono:
+          type: string
+          maxLength: 20
+          example: '3001234567'
+        direccion:
+          type: string
+          maxLength: 150
+          example: 'Calle 10 # 20-30'
+        alergias:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: Polen
+        fecha_ingreso:
+          type: string
+          format: date
+          example: '2025-01-15'
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    RegisterUserResult:
+      type: object
+      description: Resultado devuelto por MySQL al registrar el usuario.
+      properties:
+        affectedRows:
+          type: integer
+          example: 1
+        insertId:
+          type: integer
+          example: 0
+        changedRows:
+          type: integer
+          example: 0
+
+    UserPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 50
+        total:
+          type: integer
+          example: 1000
+        totalPages:
+          type: integer
+          example: 20
+
+    User:
+      type: object
+      description: Datos de un usuario registrados en el sistema.
+      properties:
+        numero_documento:
+          type: string
+          description: Número de documento del usuario.
+          example: '1234567890'
+        rol_codigo:
+          type: string
+          description: Código del rol asignado al usuario.
+          example: 'EST'
+        tipo_documento:
+          type: string
+          description: Tipo de documento del usuario.
+          example: CC
+        nombres:
+          type: string
+          description: Nombres del usuario.
+          example: Ana María
+        apellidos:
+          type: string
+          description: Apellidos del usuario.
+          example: López García
+        email:
+          type: string
+          format: email
+          description: Correo electrónico del usuario.
+          example: ana.lopez@example.com
+        telefono:
+          type: string
+          description: Número telefónico del usuario.
+          example: '3001234567'
+        direccion:
+          type: string
+          description: Dirección de residencia del usuario.
+          example: 'Calle 10 # 20-30'
+        alergias:
+          type: string
+          nullable: true
+          description: Alergias registradas para el usuario.
+          example: Polen
+        fecha_ingreso:
+          type: string
+          format: date
+          description: Fecha de ingreso del usuario.
+          example: '2025-01-15'
+        estado:
+          type: string
+          description: Estado actual del usuario.
+          example: activo
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Descripción del error.
