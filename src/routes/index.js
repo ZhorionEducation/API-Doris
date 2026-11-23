@@ -8,5 +8,7 @@ const shoppingRoutes = require('./shoppingRoutes');
 // registrar rutas de cada modulo
 router.use('/', userRoutes);
 router.use('/', shoppingRoutes);
+router.use('/', lotesRoutes);
+router.use('/', pedidosRoutes);
 
 module.exports = router;
