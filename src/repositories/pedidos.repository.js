@@ -1,31 +1,31 @@
 
-const db = require('../config/db');
+const db = require('../config/db'); // Tenemos el config db
 
-const getAllPedidos = async (page = 1, limit = 10, filtros = {}) => {
-  const condiciones = [];
-  const parametros = [];
+const getAllPedidos = async (page = 1, limit = 10, filtros = {}) => { // Tenemos la parte del async
+  const condiciones = []; // Tenemos dos arreglos vacios
+  const parametros = []; // Este es el segundo arreglo vacio
 
-  if (filtros.cliente_documento) {
-    condiciones.push('p.cliente_documento = ?');
-    parametros.push(filtros.cliente_documento);
+  if (filtros.cliente_documento) { // Aqui lo que se hace basicamente es que se filtra por medio del documento
+    condiciones.push('p.cliente_documento = ?'); // Teenemos el push, que en este caso seria el enviar
+    parametros.push(filtros.cliente_documento); // Tenemos tambien la parte de los parametros, que tambien se complementa por medio del push, es decir, se envia como tal
   }
 
-  if (filtros.estado) {
-    condiciones.push('p.estado = ?');
-    parametros.push(filtros.estado);
+  if (filtros.estado) { // Tenemos el filtrar por estado
+    condiciones.push('p.estado = ?'); // Aqui tambien tenemos el push de condiciones
+    parametros.push(filtros.estado); // Tenemos los parametros del estado y tambien tiene el push
   }
 
-  if (filtros.fecha_inicio) {
-    condiciones.push('p.fecha_pedido >= ?');
-    parametros.push(filtros.fecha_inicio);
+  if (filtros.fecha_inicio) { // Aqui tenemos filtros de la fecha de inicio
+    condiciones.push('p.fecha_pedido >= ?'); // Tenemos aqui el push, que en este caso es el enviar de condiciones
+    parametros.push(filtros.fecha_inicio); // Tenemos la parte de los parametros con el push, que en este caso el push es para enviar
   }
 
-  if (filtros.fecha_fin) {
-    condiciones.push('p.fecha_pedido <= ?');
+  if (filtros.fecha_fin) { // Aqui tenemos la filtracion de le fecha final
+    condiciones.push('p.fecha_pedido <= ?'); // Y aqui pasa lo mismo tenemos las condiciones y los parametros y el push, que en este caso es para enviar
     parametros.push(filtros.fecha_fin);
   }
 
-  const where = condiciones.length
+  const where = condiciones.length // Aqui tenemos la parte del length, que en este caso lo que pasa aqui es que el length es para saber la cantidad de elementos que hay en el arreglo, y si es mayor a 0, entonces se hace un join con AND, y si no, entonces no se hace nada 
     ? `WHERE ${condiciones.join(' AND ')}`
     : '';
 
