@@ -1,0 +1,324 @@
+paths:
+  /api/service-supplies:
+    get:
+      tags:
+        - Insumos de servicios
+      summary: Obtener insumos de servicios
+      operationId: getAllServiceSupplies
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Lista paginada obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSupplyPage'
+        '400':
+          description: Parámetros de paginación inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener los insumos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Insumos de servicios
+      summary: Registrar un insumo para un servicio
+      operationId: registerServiceSupply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateServiceSupply'
+      responses:
+        '201':
+          description: Insumo registrado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSupplyMutationResult'
+        '400':
+          description: Datos inválidos o servicio/producto inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: La combinación de servicio y producto ya existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al registrar el insumo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/service-supplies/{id}:
+    get:
+      tags:
+        - Insumos de servicios
+      summary: Obtener un insumo por ID
+      operationId: getServiceSupplyById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Insumo encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSupply'
+        '400':
+          description: ID inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: El insumo no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener el insumo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Insumos de servicios
+      summary: Actualizar un insumo
+      operationId: updateServiceSupply
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateServiceSupply'
+      responses:
+        '200':
+          description: Insumo actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSupplyMutationResult'
+        '400':
+          description: ID, datos o referencias inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: El insumo no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: La combinación de servicio y producto ya existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al actualizar el insumo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Insumos de servicios
+      summary: Desactivar un insumo
+      description: Cambia el estado a Inactivo; no elimina el registro.
+      operationId: deactivateServiceSupply
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Insumo desactivado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceSupplyMutationResult'
+        '400':
+          description: ID inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: El insumo no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al desactivar el insumo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CreateServiceSupply:
+      type: object
+      required:
+        - servicio_codigo
+        - producto_id
+        - cantidad
+      properties:
+        servicio_codigo:
+          type: string
+          maxLength: 20
+          example: SER001
+        producto_id:
+          type: integer
+          minimum: 1
+          example: 5
+        cantidad:
+          type: number
+          minimum: 0.01
+          maximum: 99999999.99
+          multipleOf: 0.01
+          example: 2.5
+        observaciones:
+          type: string
+          nullable: true
+          example: Usar una unidad por aplicación
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          default: Activo
+          example: Activo
+
+    UpdateServiceSupply:
+      type: object
+      required:
+        - servicio_codigo
+        - producto_id
+        - cantidad
+        - estado
+      properties:
+        servicio_codigo:
+          type: string
+          maxLength: 20
+          example: SER001
+        producto_id:
+          type: integer
+          minimum: 1
+          example: 5
+        cantidad:
+          type: number
+          minimum: 0.01
+          maximum: 99999999.99
+          multipleOf: 0.01
+          example: 2.5
+        observaciones:
+          type: string
+          nullable: true
+          example: Usar una unidad por aplicación
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    ServiceSupply:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        servicio_codigo:
+          type: string
+          example: SER001
+        producto_id:
+          type: integer
+          example: 5
+        cantidad:
+          type: string
+          example: '2.50'
+        observaciones:
+          type: string
+          nullable: true
+          example: Usar una unidad por aplicación
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    ServiceSupplyPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceSupply'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    ServiceSupplyMutationResult:
+      type: object
+      properties:
+        affectedRows:
+          type: integer
+          example: 1
+        insertId:
+          type: integer
+          example: 10
+        changedRows:
+          type: integer
+          example: 0

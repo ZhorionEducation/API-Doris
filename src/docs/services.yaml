@@ -1,0 +1,373 @@
+paths:
+  /api/services:
+    get:
+      tags:
+        - Servicios
+      summary: Obtener servicios
+      operationId: getAllServices
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Lista paginada obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServicePage'
+        '400':
+          description: Parámetros de paginación inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener los servicios.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Servicios
+      summary: Registrar un servicio
+      operationId: registerService
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateService'
+      responses:
+        '201':
+          description: Servicio registrado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceMutationResult'
+        '400':
+          description: Datos inválidos o categoría inexistente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Ya existe un servicio con ese código.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al registrar el servicio.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/services/{codigo}:
+    get:
+      tags:
+        - Servicios
+      summary: Obtener un servicio por código
+      operationId: getServiceByCode
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      responses:
+        '200':
+          description: Servicio encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: Código inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: El servicio no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener el servicio.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Servicios
+      summary: Actualizar un servicio
+      operationId: updateService
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateService'
+      responses:
+        '200':
+          description: Servicio actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceMutationResult'
+        '400':
+          description: Código, datos o categoría inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: El servicio no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflicto con un servicio existente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al actualizar el servicio.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Servicios
+      summary: Desactivar un servicio
+      description: Cambia el estado a Inactivo; no elimina el registro.
+      operationId: deactivateService
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      responses:
+        '200':
+          description: Servicio desactivado correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceMutationResult'
+        '400':
+          description: Código inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: El servicio no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al desactivar el servicio.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CreateService:
+      type: object
+      required:
+        - codigo
+        - categoria_id
+        - nombre
+        - duracion_minutos
+        - precio_base
+      properties:
+        codigo:
+          type: string
+          maxLength: 20
+          example: SER001
+        categoria_id:
+          type: integer
+          minimum: 1
+          example: 1
+        nombre:
+          type: string
+          maxLength: 120
+          example: Corte de cabello
+        duracion_minutos:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          example: 45
+        precio_base:
+          type: number
+          minimum: 0
+          maximum: 9999999999.99
+          multipleOf: 0.01
+          example: 25000
+        descuento:
+          type: number
+          minimum: 0
+          maximum: 100
+          multipleOf: 0.01
+          default: 0
+          example: 10
+        descripcion:
+          type: string
+          nullable: true
+          example: Servicio de corte
+        observaciones:
+          type: string
+          nullable: true
+          example: Requiere cita previa
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          default: Activo
+          example: Activo
+
+    UpdateService:
+      type: object
+      required:
+        - categoria_id
+        - nombre
+        - duracion_minutos
+        - precio_base
+        - descuento
+        - estado
+      properties:
+        categoria_id:
+          type: integer
+          minimum: 1
+          example: 1
+        nombre:
+          type: string
+          maxLength: 120
+          example: Corte de cabello
+        duracion_minutos:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          example: 45
+        precio_base:
+          type: number
+          minimum: 0
+          maximum: 9999999999.99
+          multipleOf: 0.01
+          example: 25000
+        descuento:
+          type: number
+          minimum: 0
+          maximum: 100
+          multipleOf: 0.01
+          example: 10
+        descripcion:
+          type: string
+          nullable: true
+          example: Servicio de corte
+        observaciones:
+          type: string
+          nullable: true
+          example: Requiere cita previa
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    Service:
+      type: object
+      properties:
+        codigo:
+          type: string
+          example: SER001
+        categoria_id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: Corte de cabello
+        duracion_minutos:
+          type: integer
+          example: 45
+        precio_base:
+          type: string
+          example: '25000.00'
+        descuento:
+          type: string
+          example: '10.00'
+        descripcion:
+          type: string
+          nullable: true
+          example: Servicio de corte
+        observaciones:
+          type: string
+          nullable: true
+          example: Requiere cita previa
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    ServicePage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    ServiceMutationResult:
+      type: object
+      properties:
+        affectedRows:
+          type: integer
+          example: 1
+        insertId:
+          type: integer
+          example: 0
+        changedRows:
+          type: integer
+          example: 0

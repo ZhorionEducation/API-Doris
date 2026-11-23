@@ -1,0 +1,298 @@
+paths:
+  /api/product-categories:
+    get:
+      tags:
+        - Categorias de productos
+      summary: Obtener categorias de productos
+      operationId: getAllProductCategories
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Lista paginada obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategoryPage'
+        '400':
+          description: Parametros de paginacion invalidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener las categorias.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Categorias de productos
+      summary: Registrar una categoria de productos
+      operationId: registerProductCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductCategory'
+      responses:
+        '201':
+          description: Categoria registrada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategoryMutationResult'
+        '400':
+          description: Datos invalidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Ya existe una categoria con ese nombre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al registrar la categoria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/product-categories/{id}:
+    get:
+      tags:
+        - Categorias de productos
+      summary: Obtener una categoria por ID
+      operationId: getProductCategoryById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Categoria encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategory'
+        '400':
+          description: ID invalido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: La categoria no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener la categoria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Categorias de productos
+      summary: Actualizar una categoria
+      operationId: updateProductCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductCategory'
+      responses:
+        '200':
+          description: Categoria actualizada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategoryMutationResult'
+        '400':
+          description: ID o datos invalidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: La categoria no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Ya existe una categoria con ese nombre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al actualizar la categoria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Categorias de productos
+      summary: Desactivar una categoria
+      description: Cambia el estado a Inactivo; no elimina el registro.
+      operationId: deactivateProductCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Categoria desactivada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductCategoryMutationResult'
+        '400':
+          description: ID invalido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: La categoria no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al desactivar la categoria.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CreateProductCategory:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 80
+          example: Cuidado personal
+        descripcion:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: Productos para el cuidado personal
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          default: Activo
+          example: Activo
+
+    UpdateProductCategory:
+      type: object
+      required:
+        - nombre
+        - estado
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 80
+          example: Cuidado personal
+        descripcion:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: Productos para el cuidado personal
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    ProductCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: Cuidado personal
+        descripcion:
+          type: string
+          nullable: true
+          example: Productos para el cuidado personal
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    ProductCategoryPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCategory'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    ProductCategoryMutationResult:
+      type: object
+      properties:
+        affectedRows:
+          type: integer
+          example: 1
+        insertId:
+          type: integer
+          example: 6
+        changedRows:
+          type: integer
+          example: 0
