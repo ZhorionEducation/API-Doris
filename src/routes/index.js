@@ -20,5 +20,8 @@ router.use('/', roleRoutes);
 router.use('/', serviceRoutes);
 router.use('/', serviceSupplyRoutes);
 router.use('/', productCategoryRoutes);
+router.use('/', cancellationsRoutes);
+router.use('/', gestionProRoutes);
+router.use('/', returnrRoutes);
 
 module.exports = router;
