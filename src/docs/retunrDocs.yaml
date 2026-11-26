@@ -1,0 +1,351 @@
+paths:
+  /api/devoluciones:
+    get:
+      tags:
+        - Devoluciones
+      summary: Obtener todas las devoluciones
+      description: Devuelve una página de devoluciones registradas, incluyendo sus detalles.
+      operationId: getAllDevoluciones
+      parameters:
+        - name: page
+          in: query
+          description: Número de página, comenzando desde 1.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Cantidad de devoluciones por página.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Página de devoluciones obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevolucionPage'
+        '400':
+          description: Parámetros de paginación inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener las devoluciones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al obtener devoluciones
+
+    post:
+      tags:
+        - Devoluciones
+      summary: Registrar una devolución
+      description: Registra una devolución con sus productos; la fecha de registro la asigna la base de datos.
+      operationId: registerDevolucion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDevolucion'
+      responses:
+        '201':
+          description: Devolución registrada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Devolucion'
+        '400':
+          description: Datos inválidos o alguna referencia (pedido, renglón o usuario) no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al registrar la devolución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al registrar la devolución
+
+  /api/devoluciones/{id}:
+    get:
+      tags:
+        - Devoluciones
+      summary: Obtener una devolución por ID
+      description: Devuelve la devolución identificada por su ID, incluyendo sus detalles.
+      operationId: getDevolucionById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID entero positivo de la devolución.
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Devolución obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Devolucion'
+        '400':
+          description: El ID debe ser un entero mayor a 0.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No se encontró la devolución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener la devolución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al obtener la devolución
+
+    patch:
+      tags:
+        - Devoluciones
+      summary: Actualizar una devolución
+      description: Actualiza parcialmente el motivo y/o el monto reintegrado. No permite cambiar el pedido ni los detalles.
+      operationId: updateDevolucion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID entero positivo de la devolución.
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDevolucion'
+      responses:
+        '200':
+          description: Devolución actualizada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Devolucion'
+        '400':
+          description: ID o datos de actualización inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No se encontró la devolución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al actualizar la devolución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al actualizar la devolución
+
+components:
+  schemas:
+    CreateDevolucion:
+      type: object
+      required:
+        - pedido_id
+        - registra_documento
+        - motivo
+        - monto_reintegrado
+        - detalles
+      properties:
+        pedido_id:
+          type: integer
+          minimum: 1
+          description: ID del pedido asociado a la devolución.
+          example: 42
+        registra_documento:
+          type: string
+          minLength: 1
+          maxLength: 20
+          description: Número de documento del usuario que registra la devolución.
+          example: '1234567890'
+        motivo:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Motivo de la devolución.
+          example: Producto defectuoso
+        monto_reintegrado:
+          type: number
+          format: double
+          minimum: 0
+          description: Monto reintegrado; admite hasta dos decimales.
+          example: 25000.00
+        detalles:
+          type: array
+          minItems: 1
+          description: Renglones del pedido y cantidades que se devuelven.
+          items:
+            $ref: '#/components/schemas/CreateDetalleDevolucion'
+
+    CreateDetalleDevolucion:
+      type: object
+      required:
+        - detalle_pedido_producto_id
+        - cantidad
+        - ajusta_stock
+      properties:
+        detalle_pedido_producto_id:
+          type: integer
+          minimum: 1
+          description: ID del renglón de producto dentro del pedido.
+          example: 15
+        cantidad:
+          type: integer
+          minimum: 1
+          description: Cantidad de unidades devueltas de ese renglón.
+          example: 2
+        ajusta_stock:
+          description: Indica si las unidades devueltas deben volver al inventario.
+          oneOf:
+            - type: boolean
+            - type: integer
+              enum: [0, 1]
+          example: true
+
+    UpdateDevolucion:
+      type: object
+      minProperties: 1
+      properties:
+        motivo:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Nuevo motivo de la devolución.
+          example: Producto recibido en mal estado
+        monto_reintegrado:
+          type: number
+          format: double
+          minimum: 0
+          description: Nuevo monto reintegrado; admite hasta dos decimales.
+          example: 25000.00
+
+    DevolucionPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Devolucion'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 50
+        total:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 2
+
+    Devolucion:
+      type: object
+      description: Datos de una devolución registrada en el sistema.
+      properties:
+        id:
+          type: integer
+          description: ID de la devolución.
+          example: 1
+        pedido_id:
+          type: integer
+          description: ID del pedido asociado.
+          example: 42
+        registra_documento:
+          type: string
+          description: Número de documento del usuario que registró la devolución.
+          example: '1234567890'
+        motivo:
+          type: string
+          description: Motivo de la devolución.
+          example: Producto defectuoso
+        monto_reintegrado:
+          type: number
+          format: double
+          description: Monto reintegrado.
+          example: 25000.00
+        fecha_registro:
+          type: string
+          format: date-time
+          description: Fecha y hora en que se registró la devolución.
+          example: '2025-01-15T10:30:00Z'
+        detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetalleDevolucion'
+
+    DetalleDevolucion:
+      type: object
+      description: Producto y cantidad asociados a una devolución.
+      properties:
+        id:
+          type: integer
+          description: ID del detalle de devolución.
+          example: 1
+        devolucion_id:
+          type: integer
+          description: ID de la devolución asociada.
+          example: 1
+        detalle_pedido_producto_id:
+          type: integer
+          description: ID del renglón de producto dentro del pedido.
+          example: 15
+        cantidad:
+          type: integer
+          description: Cantidad de unidades devueltas.
+          example: 2
+        ajusta_stock:
+          type: integer
+          enum: [0, 1]
+          description: Indica si las unidades devueltas vuelven al inventario.
+          example: 1
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Descripción del error.
