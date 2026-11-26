@@ -12,7 +12,7 @@ const serviceSupplyRoutes = require('./serviceSupplyRoutes');
 const productCategoryRoutes = require('./productCategoryRoutes');
 const cancellationsRoutes = require('./cancellationsRoutes');
 const gestionProRoutes = require('./gestionProRoutes');
-const returnrRoutes = require('./returnRoutes');
+const returnrRoutes = require('./returnrRoutes');
 
 
 // registrar rutas de cada modulo
