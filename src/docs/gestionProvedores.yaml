@@ -1,0 +1,166 @@
+paths:
+  /api/proveedores:
+    get:
+      tags:
+        - Proveedores
+      summary: Obtener proveedores paginados
+      description: Devuelve los proveedores con paginación.
+      parameters:
+        - name: page
+          in: query
+          description: Número de página (inicia en 1).
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Cantidad de registros por página.
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Lista de proveedores obtenida correctamente.
+        '400':
+          description: Parámetros de paginación inválidos.
+        '500':
+          description: Error al obtener los proveedores.
+
+    post:
+      tags:
+        - Proveedores
+      summary: Registrar un proveedor
+      description: Crea un proveedor nuevo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProveedorInput'
+      responses:
+        '201':
+          description: Proveedor registrado exitosamente.
+        '400':
+          description: Datos inválidos o campos obligatorios faltantes.
+        '500':
+          description: Error al registrar el proveedor.
+
+  /api/proveedores/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID del proveedor.
+        schema:
+          type: integer
+          minimum: 1
+
+    get:
+      tags:
+        - Proveedores
+      summary: Obtener un proveedor por ID
+      description: Devuelve el proveedor encontrado; si no existe, el resultado puede ser null.
+      responses:
+        '200':
+          description: Consulta realizada correctamente.
+        '400':
+          description: El ID no es un entero positivo.
+        '500':
+          description: Error al obtener el proveedor.
+
+    patch:
+      tags:
+        - Proveedores
+      summary: Actualizar campos de un proveedor
+      description: Actualiza solo los campos enviados. También permite cambiar el estado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProveedorPatch'
+      responses:
+        '200':
+          description: Actualización realizada correctamente.
+        '400':
+          description: El ID o los datos enviados no son válidos.
+        '500':
+          description: Error al actualizar el proveedor.
+
+components:
+  schemas:
+    ProveedorInput:
+      type: object
+      required:
+        - razon_social
+        - nit
+        - estado
+      properties:
+        razon_social:
+          type: string
+          example: Distribuidora Los Andes S.A.S.
+        nit:
+          type: string
+          example: 900123456-1
+        nombre_contacto:
+          type: string
+          nullable: true
+          example: Carlos Gomez
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: contacto@losandes.com
+        telefono:
+          type: string
+          nullable: true
+          example: 3001234567
+        direccion:
+          type: string
+          nullable: true
+          example: Calle 10 # 40-20
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Activo
+
+    ProveedorPatch:
+      type: object
+      minProperties: 1
+      properties:
+        razon_social:
+          type: string
+          example: Distribuidora Los Andes S.A.S.
+        nit:
+          type: string
+          example: 900123456-1
+        nombre_contacto:
+          type: string
+          nullable: true
+          example: Carlos Gomez
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: contacto@losandes.com
+        telefono:
+          type: string
+          nullable: true
+          example: 3001234567
+        direccion:
+          type: string
+          nullable: true
+          example: Calle 10 # 40-20
+        estado:
+          type: string
+          enum:
+            - Activo
+            - Inactivo
+          example: Inactivo

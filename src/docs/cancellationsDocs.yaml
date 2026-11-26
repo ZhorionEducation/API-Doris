@@ -1,0 +1,223 @@
+paths:
+  /api/anulaciones:
+    get:
+      tags:
+        - Anulaciones
+      summary: Obtener todas las anulaciones
+      description: Devuelve una página de anulaciones registradas.
+      operationId: getAllAnulaciones
+      parameters:
+        - name: page
+          in: query
+          description: Número de página, comenzando desde 1.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Cantidad de anulaciones por página.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Página de anulaciones obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnulacionPage'
+        '400':
+          description: Parámetros de paginación inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener las anulaciones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al obtener anulaciones
+
+    post:
+      tags:
+        - Anulaciones
+      summary: Registrar una anulación
+      description: Registra una anulación; la fecha de registro la asigna la base de datos.
+      operationId: registerAnulacion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnulacion'
+      responses:
+        '201':
+          description: Anulación registrada correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Anulacion'
+        '400':
+          description: Datos inválidos o el lote o usuario indicado no existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al registrar la anulación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al registrar la anulación
+
+  /api/anulaciones/{id}:
+    get:
+      tags:
+        - Anulaciones
+      summary: Obtener una anulación por ID
+      description: Devuelve la anulación identificada por su ID.
+      operationId: getAnulacionById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID entero positivo de la anulación.
+          schema:
+            type: integer
+            minimum: 1
+            example: 1
+      responses:
+        '200':
+          description: Anulación obtenida correctamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Anulacion'
+        '400':
+          description: El ID debe ser un entero mayor a 0.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No se encontró la anulación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error al obtener la anulación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Error al obtener la anulación
+
+components:
+  schemas:
+    CreateAnulacion:
+      type: object
+      required:
+        - lote_id
+        - registra_documento
+        - cantidad
+        - motivo
+      properties:
+        lote_id:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+          description: ID del lote que se va a anular.
+          example: 1
+        registra_documento:
+          type: string
+          minLength: 1
+          maxLength: 20
+          description: Número de documento del usuario que registra la anulación.
+          example: '1234567890'
+        cantidad:
+          type: integer
+          minimum: 1
+          maximum: 4294967295
+          description: Cantidad de unidades anuladas.
+          example: 2
+        motivo:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Motivo de la anulación.
+          example: Producto dañado
+
+    AnulacionPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Anulacion'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 50
+        total:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 2
+
+    Anulacion:
+      type: object
+      description: Datos de una anulación registrada en el sistema.
+      properties:
+        id:
+          type: integer
+          description: ID de la anulación.
+          example: 1
+        lote_id:
+          type: integer
+          description: ID del lote asociado.
+          example: 12
+        registra_documento:
+          type: string
+          description: Número de documento del usuario que registró la anulación.
+          example: '1234567890'
+        cantidad:
+          type: integer
+          description: Cantidad de unidades anuladas.
+          example: 2
+        motivo:
+          type: string
+          description: Motivo de la anulación.
+          example: Producto dañado
+        fecha_registro:
+          type: string
+          format: date-time
+          description: Fecha y hora en que se registró la anulación.
+          example: '2025-01-15T10:30:00Z'
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Descripción del error.
