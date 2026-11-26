@@ -10,6 +10,10 @@ const roleRoutes = require('./roleRoutes');
 const serviceRoutes = require('./serviceRoutes');
 const serviceSupplyRoutes = require('./serviceSupplyRoutes');
 const productCategoryRoutes = require('./productCategoryRoutes');
+const cancellationsRoutes = require('./cancellationsRoutes');
+const gestionProRoutes = require('./gestionProRoutes');
+const returnrRoutes = require('./returnRoutes');
+
 
 // registrar rutas de cada modulo
 router.use('/', userRoutes);
