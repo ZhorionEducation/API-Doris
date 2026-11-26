@@ -1,4 +1,4 @@
-const services = require('../services/cancellationsService');
+const services = require('../services/cancellationsServices');
 
 const camposCrear = [
     'lote_id',
